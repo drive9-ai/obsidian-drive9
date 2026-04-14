@@ -4,7 +4,7 @@
   "version": "0.1.0",
   "minAppVersion": "1.5.0",
   "description": "Sync your vault to drive9 for semantic search and AI-agent accessibility.",
-  "author": "mem9-ai",
-  "authorUrl": "https://github.com/mem9-ai",
+  "author": "drive9-ai",
+  "authorUrl": "https://github.com/drive9-ai",
   "isDesktopOnly": false
 }
