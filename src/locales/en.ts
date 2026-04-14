@@ -1,7 +1,7 @@
 /** English locale — the fallback language. */
 const en = {
   // Settings
-  "settings.title": "drive9 Settings",
+  "settings.title": "Drive9",
   "settings.serverUrl": "Server URL",
   "settings.serverUrl.desc": "drive9 server address (only change for self-hosted servers)",
   "settings.apiKey": "API Key",

@@ -3,7 +3,7 @@ import type { LocaleKeys } from "./en";
 
 const zhCN: Record<LocaleKeys, string> = {
   // Settings
-  "settings.title": "drive9 设置",
+  "settings.title": "Drive9",
   "settings.serverUrl": "服务器地址",
   "settings.serverUrl.desc": "drive9 服务器地址（仅自建服务器时修改）",
   "settings.apiKey": "API 密钥",
