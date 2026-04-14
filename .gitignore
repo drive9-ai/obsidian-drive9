@@ -1,0 +1,16 @@
+# Build output
+main.js
+
+# Dependencies
+node_modules/
+
+# IDE
+.idea/
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# npm debug logs
+npm-debug.log*

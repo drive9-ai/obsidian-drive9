@@ -1,0 +1,219 @@
+/* drive9 plugin styles */
+
+/* --- Settings --- */
+
+.drive9-advanced-summary {
+  cursor: pointer;
+  font-weight: var(--font-semibold);
+  color: var(--text-muted);
+  padding: 8px 0;
+}
+
+.drive9-gitignore-warning {
+  padding: 8px 12px;
+  margin-top: 12px;
+  border-radius: 4px;
+  background-color: var(--background-modifier-error);
+  color: var(--text-on-accent);
+}
+
+/* --- Quick setup --- */
+
+.drive9-quick-setup {
+  padding: 12px 16px;
+  margin-bottom: 16px;
+  border-radius: 8px;
+  border: 1px solid var(--background-modifier-border);
+  background-color: var(--background-secondary);
+}
+
+.drive9-quick-setup-title {
+  font-weight: var(--font-semibold);
+}
+
+.drive9-quick-setup-desc {
+  margin-top: 8px;
+  font-size: var(--font-ui-small);
+}
+
+.drive9-quick-setup-connected {
+  margin-top: 4px;
+  color: var(--text-muted);
+}
+
+.drive9-quick-setup-status {
+  margin-top: 8px;
+  font-size: var(--font-ui-smaller);
+  color: var(--text-muted);
+  display: none;
+}
+
+.drive9-quick-setup-divider {
+  display: flex;
+  align-items: center;
+  margin: 12px 0;
+  gap: 8px;
+}
+
+.drive9-quick-setup-divider-line {
+  flex: 1;
+  height: 1px;
+  background: var(--background-modifier-border);
+}
+
+.drive9-quick-setup-divider-text {
+  font-size: var(--font-ui-smaller);
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.drive9-quick-setup-hint {
+  font-size: var(--font-ui-smaller);
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.drive9-quick-setup-key-row {
+  display: flex;
+  gap: 8px;
+  margin-top: 6px;
+  align-items: center;
+}
+
+.drive9-quick-setup-key-row input {
+  flex: 1;
+  padding: 6px 8px;
+  border-radius: 4px;
+  border: 1px solid var(--background-modifier-border);
+  background: var(--background-primary);
+  color: var(--text-normal);
+  font-size: var(--font-ui-small);
+}
+
+.drive9-quick-setup-key-status {
+  margin-top: 6px;
+  font-size: var(--font-ui-smaller);
+  display: none;
+}
+
+/* --- Search modal --- */
+
+.drive9-search-state {
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.drive9-search-result {
+  padding: 2px 0;
+}
+
+.drive9-search-path {
+  font-weight: var(--font-medium);
+}
+
+.drive9-search-meta {
+  font-size: var(--font-ui-smaller);
+  color: var(--text-muted);
+}
+
+.drive9-search-preview {
+  font-size: var(--font-ui-smaller);
+  color: var(--text-faint);
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* --- Conflict modal --- */
+
+.drive9-conflict-modal {
+  padding: 8px 0;
+}
+
+.drive9-conflict-path {
+  font-family: var(--font-monospace);
+  font-size: var(--font-ui-small);
+  color: var(--text-muted);
+  word-break: break-all;
+}
+
+.drive9-conflict-table {
+  width: 100%;
+  margin: 12px 0;
+  border-collapse: collapse;
+}
+
+.drive9-conflict-table th,
+.drive9-conflict-table td {
+  padding: 4px 8px;
+  text-align: left;
+  border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.drive9-conflict-table th {
+  font-weight: var(--font-semibold);
+}
+
+.drive9-conflict-diff {
+  max-height: 200px;
+  overflow: auto;
+  font-size: var(--font-ui-smaller);
+  background: var(--background-secondary);
+  padding: 8px;
+  border-radius: 4px;
+}
+
+.drive9-conflict-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 16px;
+  justify-content: flex-end;
+}
+
+/* --- Sync panel modal --- */
+
+.drive9-sync-panel {
+  padding: 8px 0;
+}
+
+.drive9-status-ok {
+  color: var(--text-success);
+}
+
+.drive9-status-error {
+  color: var(--text-error);
+}
+
+.drive9-status-offline {
+  color: var(--text-muted);
+}
+
+.drive9-status-syncing {
+  color: var(--text-accent);
+}
+
+.drive9-conflict-list {
+  list-style: none;
+  padding: 0;
+  margin: 8px 0;
+}
+
+.drive9-conflict-list li {
+  padding: 4px 0;
+}
+
+.drive9-conflict-link {
+  cursor: pointer;
+  color: var(--text-accent);
+}
+
+.drive9-conflict-link:hover {
+  text-decoration: underline;
+}
+
+.drive9-sync-pending {
+  color: var(--text-muted);
+  font-size: var(--font-ui-small);
+}
