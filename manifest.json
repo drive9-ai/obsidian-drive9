@@ -3,7 +3,7 @@
   "name": "drive9",
   "version": "0.1.0",
   "minAppVersion": "1.5.0",
-  "description": "Sync your vault to drive9 for semantic search and AI-agent accessibility.",
+  "description": "Sync your vault across devices via drive9 with semantic search and AI-agent access.",
   "author": "drive9-ai",
   "authorUrl": "https://github.com/drive9-ai",
   "isDesktopOnly": false

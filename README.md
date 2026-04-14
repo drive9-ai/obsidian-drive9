@@ -1,14 +1,21 @@
 # drive9 for Obsidian
 
-Sync your Obsidian vault to [drive9](https://github.com/mem9-ai/drive9) for semantic search and AI-agent accessibility.
+Sync your Obsidian vault across devices through [drive9](https://github.com/mem9-ai/drive9) — keep every note in sync, search by meaning, and make your knowledge accessible to AI agents.
+
+## Why drive9?
+
+- **Sync across devices** — edit on desktop, pick up on mobile. Real-time SSE on desktop, battery-friendly polling on iOS/Android.
+- **Shared workspace** — multiple people (or AI agents) can read and write the same vault through the drive9 server.
+- **Search by meaning** — hybrid search combines full-text, vector, and keyword matching so you find notes by what they mean, not just exact words.
+- **AI-ready** — your vault is always accessible to AI agents and tools via the drive9 API, enabling workflows like automated summarization, Q&A, and knowledge retrieval.
 
 ## Features
 
-- **Bidirectional sync** — local changes push to drive9; remote changes pull automatically via SSE (desktop) or polling (mobile).
+- **Bidirectional sync** — local changes push to drive9; remote changes pull automatically.
 - **Conflict resolution** — 3-way merge with shadow store; binary files get `.conflict` copies.
-- **Semantic search** — command palette "Search" opens a search modal powered by drive9's hybrid search (FTS + vector + keyword fallback).
+- **Semantic search** — command palette "Search" opens a modal powered by drive9's hybrid search.
 - **Large file support** — files over 50 KB use multipart upload with progress indication.
-- **Mobile compatible** — works on iOS and Android with battery-friendly polling intervals.
+- **Mobile compatible** — works on iOS and Android.
 - **i18n** — English and Simplified Chinese built in.
 
 ## Setup
