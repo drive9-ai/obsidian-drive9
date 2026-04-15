@@ -24,7 +24,7 @@ export class ConflictResolver {
     private syncStates: Record<string, SyncState>,
     private persistData: () => Promise<void>,
   ) {
-    this.shadowStore = new ShadowStore(vault.adapter);
+    this.shadowStore = new ShadowStore(vault.adapter, app.vault.configDir);
   }
 
   setSuppressLocalEvent(fn: (path: string, cb: () => Promise<void>) => Promise<void>): void {
@@ -164,7 +164,7 @@ export class ConflictResolver {
       remoteStat.mtime,
       diffPreview,
     );
-    const choice = await new ConflictModal(this.app, info).open();
+    const choice = await new ConflictModal(this.app, info).openAndWait();
     if (choice === null) {
       // User dismissed modal — only record fingerprint if we have a real revision
       // When revision is unknown, allow re-popup next cycle rather than permanently suppress
@@ -341,8 +341,8 @@ export class ConflictResolver {
 
     const localFile = this.getLocalFile(path);
     if (localFile) {
-      // Move to Obsidian .trash — never permanent delete
-      await this.vault.trash(localFile, false);
+      // Move to trash — respects user's file deletion preference
+      await this.app.fileManager.trashFile(localFile);
     }
     delete this.syncStates[path];
   }

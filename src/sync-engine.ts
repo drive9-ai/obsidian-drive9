@@ -418,7 +418,7 @@ export class SyncEngine {
     await this.pullRemoteFile(path, remoteRevision, localFile);
   }
 
-  private async handleRemoteMissing(path: string, source: "polling" | "sse" = "polling"): Promise<void> {
+  private handleRemoteMissing(path: string, source: "polling" | "sse" = "polling"): void {
     const state = this.syncStates[path];
     if (!state || state.status === "conflict") return;
 

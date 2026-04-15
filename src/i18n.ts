@@ -26,9 +26,8 @@ let currentLocale: LocaleDict = en;
 export function initLocale(): void {
   // Obsidian uses moment.locale() which reflects the user's language setting.
   // Common values: "en", "zh-cn", "zh-tw", "ja", "ko", "de", "fr", etc.
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const m = (globalThis as any).moment;
-  const lang = (m?.locale?.() ?? "en").toLowerCase();
+  const win = globalThis as unknown as { moment?: { locale: () => string } };
+  const lang = (win.moment?.locale() ?? "en").toLowerCase();
 
   // Try exact match first, then base language
   currentLocale = locales[lang] ?? locales[lang.split("-")[0]] ?? en;

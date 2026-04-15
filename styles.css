@@ -1,5 +1,23 @@
 /* drive9 plugin styles */
 
+/* --- Utility classes --- */
+
+.drive9-hidden {
+  display: none;
+}
+
+.drive9-text-muted {
+  color: var(--text-muted);
+}
+
+.drive9-text-error {
+  color: var(--text-error);
+}
+
+.drive9-text-success {
+  color: var(--text-success);
+}
+
 /* --- Settings --- */
 
 .drive9-advanced-summary {
@@ -45,6 +63,9 @@
   margin-top: 8px;
   font-size: var(--font-ui-smaller);
   color: var(--text-muted);
+}
+
+.drive9-quick-setup-status.drive9-hidden {
   display: none;
 }
 
@@ -94,6 +115,9 @@
 .drive9-quick-setup-key-status {
   margin-top: 6px;
   font-size: var(--font-ui-smaller);
+}
+
+.drive9-quick-setup-key-status.drive9-hidden {
   display: none;
 }
 

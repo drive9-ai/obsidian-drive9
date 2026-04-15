@@ -50,7 +50,7 @@ export default class Drive9Plugin extends Plugin {
       () => this.savePluginData(),
     );
 
-    this.shadowStore = new ShadowStore(this.app.vault.adapter);
+    this.shadowStore = new ShadowStore(this.app.vault.adapter, this.app.vault.configDir);
     this.syncEngine.setShadowStore(this.shadowStore);
 
     this.conflictResolver = new ConflictResolver(

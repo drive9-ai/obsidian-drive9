@@ -20,7 +20,7 @@ export class Drive9SettingTab extends PluginSettingTab {
     const { containerEl } = this;
     containerEl.empty();
 
-    containerEl.createEl("h2", { text: t("settings.title") });
+    new Setting(containerEl).setName(t("settings.title")).setHeading();
 
     // --- Quick Setup ---
     this.renderQuickSetup(containerEl);
@@ -151,7 +151,7 @@ export class Drive9SettingTab extends PluginSettingTab {
       );
 
     // .gitignore warning
-    void this.checkGitignore(containerEl);
+    this.checkGitignore(containerEl);
   }
 
   private scheduleValidation(): void {
@@ -202,14 +202,17 @@ export class Drive9SettingTab extends PluginSettingTab {
     }
   }
 
-  private async checkGitignore(containerEl: HTMLElement): Promise<void> {
+  private checkGitignore(containerEl: HTMLElement): void {
     const adapter = this.app.vault.adapter;
     const vaultRoot = (adapter as { getBasePath?: () => string }).getBasePath?.();
     if (!vaultRoot) return;
 
+    const configDir = this.app.vault.configDir;
+
     try {
       const gitignorePath = `${vaultRoot}/.gitignore`;
-      const fs = (globalThis as { require?: (name: string) => { existsSync: (p: string) => boolean; readFileSync: (p: string, e: string) => string } }).require?.("fs");
+      const win = globalThis as unknown as { require?: (name: string) => { existsSync: (p: string) => boolean; readFileSync: (p: string, e: string) => string } };
+      const fs = win.require?.("fs");
       if (!fs) return;
 
       if (!fs.existsSync(`${vaultRoot}/.git`)) return;
@@ -221,18 +224,18 @@ export class Drive9SettingTab extends PluginSettingTab {
 
       const content = fs.readFileSync(gitignorePath, "utf-8");
       const lines = content.split("\n").map((l: string) => l.trim());
-      const coversObsidian = lines.some((l: string) => {
-        // Strip comments and empty lines
+      const configDirEscaped = configDir.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      const pattern = new RegExp(`^\\/?${configDirEscaped}(\\/.*)?$`);
+      const coversConfig = lines.some((l: string) => {
         if (!l || l.startsWith("#")) return false;
-        // Match common patterns that cover .obsidian/ or the plugin data dir
-        return /^\/?\.obsidian(\/.*)?$/.test(l)
-          || l === ".obsidian"
-          || l === ".obsidian/"
-          || l === ".obsidian/**"
-          || l === ".obsidian/*";
+        return pattern.test(l)
+          || l === configDir
+          || l === `${configDir}/`
+          || l === `${configDir}/**`
+          || l === `${configDir}/*`;
       });
 
-      if (!coversObsidian) {
+      if (!coversConfig) {
         this.addGitignoreWarning(containerEl, t("settings.gitignoreNoCoverage"));
       }
     } catch {
@@ -275,7 +278,7 @@ export class Drive9SettingTab extends PluginSettingTab {
     const createBtn = createBtnRow.createEl("button", { text: t("settings.createAccount") });
     createBtn.classList.add("mod-cta");
 
-    const statusEl = wrapper.createEl("div", { cls: "drive9-quick-setup-status" });
+    const statusEl = wrapper.createEl("div", { cls: "drive9-quick-setup-status drive9-hidden" });
 
     // --- Divider ---
     const divider = wrapper.createEl("div", { cls: "drive9-quick-setup-divider" });
@@ -301,7 +304,7 @@ export class Drive9SettingTab extends PluginSettingTab {
 
     const connectBtn = keyRow.createEl("button", { text: t("settings.quickSetupConnect") });
 
-    const keyStatusEl = wrapper.createEl("div", { cls: "drive9-quick-setup-key-status" });
+    const keyStatusEl = wrapper.createEl("div", { cls: "drive9-quick-setup-key-status drive9-hidden" });
 
     connectBtn.addEventListener("click", () => {
       void this.connectExistingKey(keyInput, connectBtn, keyStatusEl);
@@ -328,16 +331,16 @@ export class Drive9SettingTab extends PluginSettingTab {
     if (btn.disabled) return;
     const key = input.value.trim();
     if (!key) {
-      statusEl.style.display = "block";
-      statusEl.style.color = "var(--text-error)";
+      statusEl.removeClass("drive9-hidden", "drive9-text-muted", "drive9-text-success");
+      statusEl.addClass("drive9-text-error");
       statusEl.setText(t("settings.enterApiKey"));
       return;
     }
 
     btn.disabled = true;
     btn.setText(t("settings.quickSetupConnecting"));
-    statusEl.style.display = "block";
-    statusEl.style.color = "var(--text-muted)";
+    statusEl.removeClass("drive9-hidden", "drive9-text-error", "drive9-text-success");
+    statusEl.addClass("drive9-text-muted");
     statusEl.setText(t("settings.quickSetupVerifying"));
 
     const testClient = new Drive9Client(
@@ -352,7 +355,8 @@ export class Drive9SettingTab extends PluginSettingTab {
       this.plugin.settings.apiKey = key;
       await this.plugin.savePluginData();
 
-      statusEl.style.color = "var(--text-success)";
+      statusEl.removeClass("drive9-text-muted", "drive9-text-error");
+      statusEl.addClass("drive9-text-success");
       statusEl.setText(t("settings.quickSetupKeySuccess"));
       new Notice(t("settings.connectionSuccess"));
 
@@ -364,7 +368,8 @@ export class Drive9SettingTab extends PluginSettingTab {
       btn.disabled = false;
       btn.setText(t("settings.quickSetupConnect"));
       const msg = e instanceof Error ? e.message : String(e);
-      statusEl.style.color = "var(--text-error)";
+      statusEl.removeClass("drive9-text-muted", "drive9-text-success");
+      statusEl.addClass("drive9-text-error");
       statusEl.setText(t("settings.connectionFailed", { error: sanitizeError(msg) }));
     }
   }
@@ -372,7 +377,7 @@ export class Drive9SettingTab extends PluginSettingTab {
   private async doProvision(btn: HTMLButtonElement, statusEl: HTMLElement): Promise<void> {
     btn.disabled = true;
     btn.setText(t("settings.creatingAccount"));
-    statusEl.style.display = "block";
+    statusEl.removeClass("drive9-hidden");
     statusEl.setText(t("settings.provisionConnecting"));
 
     try {

@@ -1,4 +1,4 @@
-import { requestUrl, RequestUrlParam, Platform } from "obsidian";
+import { requestUrl, RequestUrlParam } from "obsidian";
 import type { StatResult, FileInfo, ProgressFn, SearchResult } from "./types";
 
 /** Files >= this size use multipart upload (matches server threshold). */

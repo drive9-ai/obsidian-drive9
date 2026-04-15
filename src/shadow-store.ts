@@ -1,19 +1,21 @@
 import type { DataAdapter } from "obsidian";
 import type { SyncState } from "./types";
 
-const SHADOW_DIR = ".obsidian/plugins/drive9/shadow";
-
 /**
  * ShadowStore saves a copy of file content at last-sync for use as the
  * merge base in 3-way conflict resolution. Files are stored by content
  * hash (SHA-256 hex) for deduplication.
  */
 export class ShadowStore {
-  constructor(private adapter: DataAdapter) {}
+  private shadowDir: string;
+
+  constructor(private adapter: DataAdapter, configDir: string) {
+    this.shadowDir = `${configDir}/plugins/drive9/shadow`;
+  }
 
   async save(data: ArrayBuffer): Promise<string> {
     const hash = await this.hash(data);
-    const shadowPath = `${SHADOW_DIR}/${hash}.bin`;
+    const shadowPath = `${this.shadowDir}/${hash}.bin`;
     if (!(await this.exists(shadowPath))) {
       await this.ensureDir();
       await this.adapter.writeBinary(shadowPath, data);
@@ -22,7 +24,7 @@ export class ShadowStore {
   }
 
   async load(hash: string): Promise<ArrayBuffer | null> {
-    const shadowPath = `${SHADOW_DIR}/${hash}.bin`;
+    const shadowPath = `${this.shadowDir}/${hash}.bin`;
     if (!(await this.exists(shadowPath))) {
       return null;
     }
@@ -41,11 +43,11 @@ export class ShadowStore {
     }
 
     let removed = 0;
-    if (!(await this.exists(SHADOW_DIR))) {
+    if (!(await this.exists(this.shadowDir))) {
       return removed;
     }
 
-    const listing = await this.adapter.list(SHADOW_DIR);
+    const listing = await this.adapter.list(this.shadowDir);
     for (const filePath of listing.files) {
       const name = filePath.split("/").pop() ?? "";
       const hash = name.replace(/\.bin$/, "");
@@ -72,8 +74,8 @@ export class ShadowStore {
   }
 
   private async ensureDir(): Promise<void> {
-    if (!(await this.exists(SHADOW_DIR))) {
-      await this.adapter.mkdir(SHADOW_DIR);
+    if (!(await this.exists(this.shadowDir))) {
+      await this.adapter.mkdir(this.shadowDir);
     }
   }
 

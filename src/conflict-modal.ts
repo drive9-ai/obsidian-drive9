@@ -27,7 +27,7 @@ export class ConflictModal extends Modal {
     super(app);
   }
 
-  open(): Promise<ConflictChoice | null> {
+  openAndWait(): Promise<ConflictChoice | null> {
     return new Promise((resolve) => {
       this.resolve = resolve;
       super.open();
