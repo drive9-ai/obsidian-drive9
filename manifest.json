@@ -1,7 +1,7 @@
 {
   "id": "drive9",
   "name": "drive9",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "minAppVersion": "1.5.0",
   "description": "Sync your vault across devices via drive9 with semantic search and AI-agent access.",
   "author": "drive9-ai",

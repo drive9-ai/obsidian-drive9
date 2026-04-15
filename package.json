@@ -1,6 +1,6 @@
 {
   "name": "obsidian-drive9",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Sync your Obsidian vault to drive9 for semantic search and AI-agent accessibility.",
   "main": "main.js",
   "scripts": {
