@@ -9,6 +9,16 @@ Sync your Obsidian vault across devices through [drive9](https://github.com/mem9
 - **Search by meaning** — hybrid search combines full-text, vector, and keyword matching so you find notes by what they mean, not just exact words.
 - **AI-ready** — your vault is always accessible to AI agents and tools via the drive9 API, enabling workflows like automated summarization, Q&A, and knowledge retrieval.
 
+## Screenshots
+
+| Setup | Connected |
+|:---:|:---:|
+| ![Quick setup](docs/setup.jpeg) | ![Settings](docs/settings.jpeg) |
+
+| Semantic search | Sync status |
+|:---:|:---:|
+| ![Search](docs/search.jpeg) | ![Sync](docs/sync.jpeg) |
+
 ## Features
 
 - **Bidirectional sync** — local changes push to drive9; remote changes pull automatically.
@@ -40,7 +50,7 @@ On first launch, the plugin detects whether files exist locally, remotely, or bo
 | Server URL | `https://api.drive9.ai` | drive9 server address |
 | API Key | — | Authentication key (stored locally in `.obsidian/`) |
 | Push debounce | 2000 ms | Delay before syncing after a file change |
-| Ignore paths | `.obsidian/**`, `.trash/**`, `*.tmp`, `.DS_Store` | Glob patterns excluded from sync |
+| Ignore paths | `<configDir>/**`, `.trash/**`, `*.tmp`, `.DS_Store` | Glob patterns excluded from sync |
 | Max file size | 100 MB | Skip files larger than this |
 | Mobile max file size | 20 MB | Lower limit on mobile to prevent out-of-memory |
 
