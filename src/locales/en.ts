@@ -19,19 +19,19 @@ const en = {
   "settings.maxFileSize": "Max file size (MB)",
   "settings.maxFileSize.desc": "Skip files larger than this (default: 100)",
   "settings.mobileMaxFileSize": "Mobile max file size (MB)",
-  "settings.mobileMaxFileSize.desc": "Lower file size limit on mobile to avoid OOM (default: 20)",
+  "settings.mobileMaxFileSize.desc": "Lower file size limit on mobile to avoid out-of-memory crashes (default: 20)",
   "settings.advanced": "Advanced settings",
   "settings.enterServerUrl": "Please enter a server URL first",
   "settings.enterApiKey": "Please enter an API key first",
   "settings.connectionSuccess": "Drive9: connection successful!",
   "settings.connectionFailed": "Drive9: connection failed — {error}",
   "settings.securityWarning": "Security warning: ",
-  "settings.gitignoreNoFile": "No .gitignore found. Your API key could be committed to git.",
-  "settings.gitignoreNoCoverage": ".gitignore does not cover the config directory — your API key could be committed to git.",
+  "settings.gitignoreNoFile": "No .gitignore found — your API key could be committed to git.",
+  "settings.gitignoreNoCoverage": "The .gitignore does not cover the config directory — your API key could be committed to git.",
   "settings.quickSetup": "Quick setup",
   "settings.quickSetupConnected": "Already configured — your account is connected.",
   "settings.quickSetupNewUser": "New to Drive9? Create a free account in one click.",
-  "settings.quickSetupOr": "or",
+  "settings.quickSetupOr": "Or",
   "settings.quickSetupExistingUser": "Already have an account?",
   "settings.quickSetupExistingHint": "Paste the API key from your other device.",
   "settings.quickSetupKeyPlaceholder": "Paste your API key",
@@ -41,7 +41,7 @@ const en = {
   "settings.quickSetupKeySuccess": "Connected! Sync will start automatically.",
   "settings.createAccount": "Create account",
   "settings.creatingAccount": "Creating account...",
-  "settings.provisionConnecting": "Connecting to Drive9 servers...",
+  "settings.provisionConnecting": "Connecting to Drive9 server...",
   "settings.provisionInitializing": "Provisioning database (this may take 10-30 seconds)...",
   "settings.provisionCreated": "Drive9: account created! Setting up...",
   "settings.provisionSchema": "Account created. Initializing database schema...",
@@ -73,7 +73,7 @@ const en = {
   // Commands
   "cmd.search": "Search",
   "cmd.retrySync": "Retry failed sync",
-  "cmd.searchRibbon": "Search Drive9",
+  "cmd.searchRibbon": "Search in Drive9",
 
   // Notices — main
   "notice.configureFirst": "Drive9: please configure API key in settings first",
@@ -97,15 +97,15 @@ const en = {
   "notice.remoteChangedRetry": "Drive9: remote changed again for {path}, retrying next cycle",
 
   // Search modal
-  "search.placeholder": "Search files in Drive9...",
+  "search.placeholder": "Search files in Drive9\u2026",
   "search.minChars": "Type at least 3 characters to search",
   "search.searching": "Searching...",
   "search.noResults": "No results found",
-  "search.navigate": "navigate",
-  "search.open": "open file",
-  "search.dismiss": "dismiss",
+  "search.navigate": "Navigate",
+  "search.open": "Open file",
+  "search.dismiss": "Dismiss",
   "search.error": "Drive9 search: {detail}",
-  "search.score": "score: {score}",
+  "search.score": "Score: {score}",
   "search.notFoundLocally": "Drive9: file not found locally — {path}",
 
   // Conflict modal
@@ -135,7 +135,7 @@ const en = {
   "syncPanel.skippedTitle": "{count} skipped (too large)",
 
   // First run
-  "firstRun.downloadTitle": "Download from Drive9?",
+  "firstRun.downloadTitle": "Download from Drive9",
   "firstRun.downloadMsg": "Drive9 has {count} files. Download them to your vault?",
   "firstRun.yes": "Yes",
   "firstRun.cancel": "Cancel",

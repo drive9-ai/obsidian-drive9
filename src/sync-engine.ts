@@ -151,7 +151,7 @@ export class SyncEngine {
         if (scan.complete) {
           for (const path of Object.keys(this.syncStates)) {
             if (this.shouldIgnore(path) || remotePaths.has(path)) continue;
-            await this.handleRemoteMissing(path);
+            this.handleRemoteMissing(path);
           }
         } else {
           console.warn("[drive9] remote tree scan incomplete; skipping delete detection");
@@ -396,7 +396,7 @@ export class SyncEngine {
       remoteRevision = remoteStat.revision;
     } catch (error) {
       if (error instanceof Drive9Error && error.status === 404) {
-        await this.handleRemoteMissing(path, deleteSource ?? "polling");
+        this.handleRemoteMissing(path, deleteSource ?? "polling");
         return;
       }
       throw error;

@@ -21,7 +21,7 @@ const zhCN: Record<LocaleKeys, string> = {
   "settings.maxFileSize": "最大文件大小（MB）",
   "settings.maxFileSize.desc": "跳过超过此大小的文件（默认：100）",
   "settings.mobileMaxFileSize": "移动端最大文件大小（MB）",
-  "settings.mobileMaxFileSize.desc": "移动端文件大小上限，避免内存不足（默认：20）",
+  "settings.mobileMaxFileSize.desc": "移动端文件大小上限，避免内存溢出崩溃（默认：20）",
   "settings.advanced": "高级设置",
   "settings.enterServerUrl": "请先输入服务器地址",
   "settings.enterApiKey": "请先输入 API 密钥",
@@ -43,7 +43,7 @@ const zhCN: Record<LocaleKeys, string> = {
   "settings.quickSetupKeySuccess": "已连接！同步将自动开始。",
   "settings.createAccount": "创建账号",
   "settings.creatingAccount": "正在创建账号...",
-  "settings.provisionConnecting": "正在连接 Drive9 服务器...",
+  "settings.provisionConnecting": "正在连接 Drive9 服务器\u2026",
   "settings.provisionInitializing": "正在初始化数据库（可能需要 10-30 秒）...",
   "settings.provisionCreated": "Drive9：账号已创建！正在设置...",
   "settings.provisionSchema": "账号已创建，正在初始化数据库...",
@@ -75,7 +75,7 @@ const zhCN: Record<LocaleKeys, string> = {
   // Commands
   "cmd.search": "搜索",
   "cmd.retrySync": "重试失败的同步",
-  "cmd.searchRibbon": "搜索 Drive9",
+  "cmd.searchRibbon": "在 Drive9 中搜索",
 
   // Notices — main
   "notice.configureFirst": "Drive9：请先在设置中配置 API 密钥",
@@ -107,7 +107,7 @@ const zhCN: Record<LocaleKeys, string> = {
   "search.open": "打开文件",
   "search.dismiss": "关闭",
   "search.error": "Drive9 搜索：{detail}",
-  "search.score": "分数：{score}",
+  "search.score": "得分：{score}",
   "search.notFoundLocally": "Drive9：本地未找到文件 — {path}",
 
   // Conflict modal
@@ -137,7 +137,7 @@ const zhCN: Record<LocaleKeys, string> = {
   "syncPanel.skippedTitle": "{count} 个文件被跳过（过大）",
 
   // First run
-  "firstRun.downloadTitle": "从 Drive9 下载？",
+  "firstRun.downloadTitle": "从 Drive9 下载",
   "firstRun.downloadMsg": "Drive9 上有 {count} 个文件。是否下载到你的仓库？",
   "firstRun.yes": "是",
   "firstRun.cancel": "取消",

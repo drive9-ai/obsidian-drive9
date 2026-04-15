@@ -298,6 +298,11 @@ export default class Drive9Plugin extends Plugin {
     if (!this.settings.serverUrl) {
       this.settings.serverUrl = DEFAULT_SETTINGS.serverUrl;
     }
+    // Ensure config directory is always ignored (uses Vault.configDir instead of hardcoding)
+    const configIgnore = `${this.app.vault.configDir}/**`;
+    if (!this.settings.ignorePaths.includes(configIgnore)) {
+      this.settings.ignorePaths.unshift(configIgnore);
+    }
     this.syncStates = data.syncStates ?? {};
     this.firstRunComplete = data.firstRunComplete ?? false;
     this.actorId = data.actorId ?? "";

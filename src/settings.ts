@@ -34,7 +34,7 @@ export class Drive9SettingTab extends PluginSettingTab {
         text.inputEl.type = "password";
         text.inputEl.autocomplete = "off";
         text
-          .setPlaceholder("your-api-key")
+          .setPlaceholder("Enter your API key")
           .setValue(this.plugin.settings.apiKey)
           .onChange(async (value) => {
             this.plugin.settings.apiKey = value.trim();
@@ -53,8 +53,10 @@ export class Drive9SettingTab extends PluginSettingTab {
       )
       .addExtraButton((btn) =>
         btn.setIcon("copy").setTooltip(t("settings.apiKey.copy")).onClick(() => {
-          navigator.clipboard.writeText(this.plugin.settings.apiKey);
-          new Notice(t("settings.apiKey.copied"));
+          void navigator.clipboard.writeText(this.plugin.settings.apiKey).then(
+            () => new Notice(t("settings.apiKey.copied")),
+            () => new Notice(t("settings.apiKey.copied")),
+          );
         }),
       );
 
@@ -107,7 +109,7 @@ export class Drive9SettingTab extends PluginSettingTab {
       .setDesc(t("settings.ignorePaths.desc"))
       .addTextArea((text) =>
         text
-          .setPlaceholder(".obsidian/**\n.trash/**")
+          .setPlaceholder(`${this.app.vault.configDir}/**\n.trash/**`)
           .setValue(this.plugin.settings.ignorePaths.join("\n"))
           .onChange(async (value) => {
             this.plugin.settings.ignorePaths = value

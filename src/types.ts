@@ -15,7 +15,7 @@ export const DEFAULT_SETTINGS: Drive9Settings = {
   serverUrl: "https://api.drive9.ai",
   apiKey: "",
   pushDebounce: 2000,
-  ignorePaths: [".obsidian/**", ".trash/**", "*.tmp", ".DS_Store"],
+  ignorePaths: [".trash/**", "*.tmp", ".DS_Store"],
   maxFileSize: 100 * 1024 * 1024, // 100MB
   mobileMaxFileSize: 20 * 1024 * 1024, // 20MB — lower limit on mobile to avoid OOM
 };

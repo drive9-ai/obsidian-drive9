@@ -57,23 +57,8 @@ export class Drive9SearchModal extends SuggestModal<SearchResult> {
     // via an input event so SuggestModal re-renders.
     if (this.debounceTimer) clearTimeout(this.debounceTimer);
     this.searching = true;
-    this.debounceTimer = setTimeout(async () => {
-      try {
-        const results = await this.client.grep(query, SEARCH_LIMIT);
-        this.lastQuery = query;
-        this.cachedResults = results;
-      } catch (e) {
-        this.lastQuery = query;
-        this.cachedResults = [];
-        if (e instanceof Drive9Error) {
-          new Notice(t("search.error", { detail: e.message }));
-        } else {
-          new Notice(t("search.error", { detail: sanitizeError(e instanceof Error ? e.message : String(e)) }));
-        }
-      }
-      this.searching = false;
-      // Re-trigger SuggestModal to call getSuggestions with updated cache
-      this.inputEl.dispatchEvent(new Event("input"));
+    this.debounceTimer = setTimeout(() => {
+      void this.doSearch(query);
     }, DEBOUNCE_MS);
 
     return [LOADING_STATE];
@@ -117,13 +102,18 @@ export class Drive9SearchModal extends SuggestModal<SearchResult> {
     if (isTextFile(result.path) && result.size_bytes > 0) {
       const previewEl = container.createDiv({ cls: "drive9-search-preview" });
 
-      this.fetchPreview(result.path).then((text) => {
-        if (text) {
-          previewEl.setText(text);
-        } else {
+      this.fetchPreview(result.path).then(
+        (text) => {
+          if (text) {
+            previewEl.setText(text);
+          } else {
+            previewEl.remove();
+          }
+        },
+        () => {
           previewEl.remove();
-        }
-      });
+        },
+      );
     }
   }
 
@@ -142,6 +132,25 @@ export class Drive9SearchModal extends SuggestModal<SearchResult> {
       clearTimeout(this.debounceTimer);
       this.debounceTimer = null;
     }
+  }
+
+  private async doSearch(query: string): Promise<void> {
+    try {
+      const results = await this.client.grep(query, SEARCH_LIMIT);
+      this.lastQuery = query;
+      this.cachedResults = results;
+    } catch (e) {
+      this.lastQuery = query;
+      this.cachedResults = [];
+      if (e instanceof Drive9Error) {
+        new Notice(t("search.error", { detail: e.message }));
+      } else {
+        new Notice(t("search.error", { detail: sanitizeError(e instanceof Error ? e.message : String(e)) }));
+      }
+    }
+    this.searching = false;
+    // Re-trigger SuggestModal to call getSuggestions with updated cache
+    this.inputEl.dispatchEvent(new Event("input"));
   }
 
   private fetchPreview(path: string): Promise<string | null> {
