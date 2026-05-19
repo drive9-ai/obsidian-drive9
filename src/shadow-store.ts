@@ -9,8 +9,8 @@ import type { SyncState } from "./types";
 export class ShadowStore {
   private shadowDir: string;
 
-  constructor(private adapter: DataAdapter, configDir: string) {
-    this.shadowDir = `${configDir}/plugins/drive9/shadow`;
+  constructor(private adapter: DataAdapter, configDir: string, pluginId: string) {
+    this.shadowDir = `${configDir}/plugins/${pluginId}/shadow`;
   }
 
   async save(data: ArrayBuffer): Promise<string> {
