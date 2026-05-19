@@ -50,7 +50,7 @@ export default class Drive9Plugin extends Plugin {
       () => this.savePluginData(),
     );
 
-    this.shadowStore = new ShadowStore(this.app.vault.adapter, this.app.vault.configDir);
+    this.shadowStore = new ShadowStore(this.app.vault.adapter, this.app.vault.configDir, this.manifest.id);
     this.syncEngine.setShadowStore(this.shadowStore);
 
     this.conflictResolver = new ConflictResolver(
@@ -59,6 +59,7 @@ export default class Drive9Plugin extends Plugin {
       this.client,
       this.syncStates,
       () => this.savePluginData(),
+      this.manifest.id,
     );
     this.conflictResolver.setSuppressLocalEvent(
       (path, fn) => this.syncEngine.withSuppressedLocalEvents(path, fn),

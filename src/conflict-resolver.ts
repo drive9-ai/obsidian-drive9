@@ -23,8 +23,9 @@ export class ConflictResolver {
     private client: Drive9Client,
     private syncStates: Record<string, SyncState>,
     private persistData: () => Promise<void>,
+    pluginId: string,
   ) {
-    this.shadowStore = new ShadowStore(vault.adapter, app.vault.configDir);
+    this.shadowStore = new ShadowStore(vault.adapter, app.vault.configDir, pluginId);
   }
 
   setSuppressLocalEvent(fn: (path: string, cb: () => Promise<void>) => Promise<void>): void {
