@@ -1,10 +1,10 @@
 {
-  "id": "drive-nine",
-  "name": "drive9",
-  "version": "0.1.2",
-  "minAppVersion": "1.5.0",
-  "description": "Sync your vault across devices via drive9 with semantic search and AI-agent access.",
-  "author": "drive9-ai",
-  "authorUrl": "https://github.com/drive9-ai",
-  "isDesktopOnly": false
+	"id": "drive-nine",
+	"name": "drive9",
+	"version": "0.1.3",
+	"minAppVersion": "1.5.0",
+	"description": "Sync your vault across devices via drive9 with semantic search and AI-agent access.",
+	"author": "drive9-ai",
+	"authorUrl": "https://github.com/drive9-ai",
+	"isDesktopOnly": false
 }

@@ -30,7 +30,7 @@ Sync your Obsidian vault across devices through [drive9](https://github.com/mem9
 
 ## Setup
 
-1. Install the plugin from Obsidian Community Plugins (search "drive9") or manually copy `main.js`, `manifest.json`, and `styles.css` to your vault's `.obsidian/plugins/drive9/` directory.
+1. Install the plugin from Obsidian Community Plugins (search "drive9") or manually copy `main.js`, `manifest.json`, and `styles.css` to your vault's `.obsidian/plugins/drive-nine/` directory.
 2. Open **Settings > drive9**.
 3. Click **Create Account** to provision a new drive9 workspace, or paste an existing **API Key**.
 4. Sync starts automatically after the first-run reconciliation.
@@ -56,7 +56,7 @@ On first launch, the plugin detects whether files exist locally, remotely, or bo
 
 ## Security
 
-- API key is stored in `.obsidian/plugins/drive9/data.json` — ensure `.obsidian/` is in your `.gitignore` if your vault is a git repo.
+- API key is stored in `.obsidian/plugins/drive-nine/data.json` — ensure `.obsidian/` is in your `.gitignore` if your vault is a git repo.
 - The plugin warns you in settings if `.gitignore` doesn't cover `.obsidian/`.
 - Error messages are sanitized to strip Bearer tokens before display.
 

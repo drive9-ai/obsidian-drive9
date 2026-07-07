@@ -1,27 +1,36 @@
-import { requestUrl, RequestUrlParam } from "obsidian";
+import { Drive9SDKError, StatusError } from "./drive9-sdk/error";
+import { ObsidianDrive9SDKClient } from "./drive9-sdk/obsidian-client";
 import type { StatResult, FileInfo, ProgressFn, SearchResult } from "./types";
 
-/** Files >= this size use multipart upload (matches server threshold). */
+/** Files >= this size use SDK multipart upload (matches server threshold). */
 const MULTIPART_THRESHOLD = 50_000; // 50 KB
 
 /**
- * Drive9Client wraps the drive9 REST API using Obsidian's requestUrl
- * (bypasses CORS, works on mobile).
+ * Drive9Client preserves the plugin-facing API while delegating the wire
+ * protocol to the Drive9 TypeScript SDK adapter.
  */
 export class Drive9Client {
+  private sdk: ObsidianDrive9SDKClient;
+
   constructor(
     private serverUrl: string,
     private apiKey: string,
     private actorId = "",
-  ) {}
+  ) {
+    this.sdk = new ObsidianDrive9SDKClient(serverUrl, apiKey);
+    this.sdk.setActor(actorId);
+  }
 
   updateConfig(serverUrl: string, apiKey: string): void {
     this.serverUrl = serverUrl;
     this.apiKey = apiKey;
+    this.sdk.updateConfig(serverUrl, apiKey);
+    this.sdk.setActor(this.actorId);
   }
 
   setActorId(actorId: string): void {
     this.actorId = actorId;
+    this.sdk.setActor(actorId);
   }
 
   getServerUrl(): string {
@@ -43,52 +52,34 @@ export class Drive9Client {
 
   /** POST /v1/provision — create a new tenant. No auth required. */
   async provision(): Promise<{ api_key: string; status: string }> {
-    const url = `${this.serverUrl}/v1/provision`;
-    const resp = await requestUrl({
-      url,
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      throw: false,
-    });
-    if (resp.status >= 400) {
-      let msg = `HTTP ${resp.status}`;
-      try {
-        if (typeof resp.json?.error === "string") {
-          msg = resp.json.error;
-        }
-      } catch { /* no body */ }
-      throw new Drive9Error(msg, resp.status);
-    }
-    return resp.json as { api_key: string; status: string };
+    return this.wrap(() => this.sdk.provision());
   }
 
   /** GET /v1/status — check tenant provisioning status. Requires auth. */
   async getStatus(): Promise<{ status: string }> {
-    const resp = await this.request("GET", "/v1/status");
-    return resp.json as { status: string };
+    const status = await this.wrap(() => this.sdk.status());
+    return { status: String(status.status ?? "") };
   }
 
   /** HEAD — get file/dir metadata including revision. */
   async stat(path: string): Promise<StatResult> {
-    const resp = await this.request("HEAD", `/v1/fs/${encodePath(path)}`);
+    const st = await this.wrap(() => this.sdk.stat(path));
     return {
-      size: parseInt(resp.headers["content-length"] ?? "0", 10),
-      isDir: resp.headers["x-dat9-isdir"] === "true",
-      revision: parseInt(resp.headers["x-dat9-revision"] ?? "0", 10),
-      mtime: parseInt(resp.headers["x-dat9-mtime"] ?? "0", 10),
+      size: st.size,
+      isDir: st.isDir,
+      revision: st.revision,
+      mtime: st.mtime?.getTime() ?? 0,
     };
   }
 
   /** GET — read file content. */
   async read(path: string): Promise<ArrayBuffer> {
-    const resp = await this.request("GET", `/v1/fs/${encodePath(path)}`);
-    return resp.arrayBuffer;
+    const data = await this.wrap(() => this.sdk.read(path));
+    return toArrayBuffer(data);
   }
 
   /**
    * Write file content with optional CAS revision check.
-   * Files >= MULTIPART_THRESHOLD use v2 multipart upload;
-   * smaller files use direct PUT.
    *
    * Returns { revision: number } on full success, or
    * { revision: null, writeSucceeded: true } if write succeeded but
@@ -100,26 +91,18 @@ export class Drive9Client {
     expectedRevision?: number | null,
     onProgress?: ProgressFn,
   ): Promise<{ revision: number | null; writeSucceeded: boolean }> {
-    if (data.byteLength >= MULTIPART_THRESHOLD) {
-      try {
-        return await this.writeMultipart(path, data, expectedRevision, onProgress);
-      } catch (e) {
-        if (e instanceof Drive9Error && e.status === 404) {
-          // Server doesn't support v2 uploads — fall through to direct PUT.
-        } else {
-          throw e;
-        }
+    const bytes = new Uint8Array(data);
+    const expected = expectedRevision ?? -1;
+
+    await this.wrap(async () => {
+      if (bytes.byteLength >= MULTIPART_THRESHOLD) {
+        await this.sdk.writeStreamWithSummary(path, bytes, bytes.byteLength, {
+          expectedRevision: expected,
+          onProgress,
+        });
+      } else {
+        await this.sdk.writeWithRevision(path, bytes, { expectedRevision: expected });
       }
-    }
-
-    const headers: Record<string, string> = this.mutationHeaders();
-    if (expectedRevision !== undefined && expectedRevision !== null) {
-      headers["X-Dat9-Expected-Revision"] = String(expectedRevision);
-    }
-
-    await this.request("PUT", `/v1/fs/${encodePath(path)}`, {
-      body: data,
-      headers,
     });
 
     try {
@@ -130,197 +113,35 @@ export class Drive9Client {
     }
   }
 
-  /**
-   * v2 multipart upload: initiate → presign-batch → PUT parts → complete.
-   * Parts are uploaded sequentially to keep memory bounded.
-   */
-  private async writeMultipart(
-    path: string,
-    data: ArrayBuffer,
-    expectedRevision?: number | null,
-    onProgress?: ProgressFn,
-  ): Promise<{ revision: number | null; writeSucceeded: boolean }> {
-    // 1. Initiate
-    const initBody: Record<string, unknown> = {
-      path,
-      total_size: data.byteLength,
-    };
-    if (expectedRevision !== undefined && expectedRevision !== null) {
-      initBody.expected_revision = expectedRevision;
-    }
-
-    const initResp = await this.request("POST", "/v2/uploads/initiate", {
-      body: JSON.stringify(initBody),
-      headers: { ...this.mutationHeaders(), "Content-Type": "application/json" },
-    });
-    const plan = initResp.json as {
-      upload_id: string;
-      part_size: number;
-      total_parts: number;
-    };
-
-    const uploadId = plan.upload_id;
-    const partSize = plan.part_size;
-    const totalParts = plan.total_parts;
-
-    try {
-      // 2. Presign all parts in one batch
-      const partEntries = Array.from({ length: totalParts }, (_, i) => ({
-        part_number: i + 1,
-      }));
-      const presignResp = await this.request(
-        "POST",
-        `/v2/uploads/${uploadId}/presign-batch`,
-        {
-          body: JSON.stringify({ parts: partEntries }),
-          headers: { "Content-Type": "application/json" },
-        },
-      );
-      const presigned = (presignResp.json as { parts: PresignedPart[] }).parts;
-
-      // 3. Upload parts sequentially
-      const completedParts: Array<{ number: number; etag: string }> = [];
-
-      for (const part of presigned) {
-        const offset = (part.number - 1) * partSize;
-        const end = Math.min(offset + part.size, data.byteLength);
-        const chunk = data.slice(offset, end);
-
-        const etag = await this.uploadOnePart(uploadId, part, chunk);
-        completedParts.push({ number: part.number, etag });
-
-        if (onProgress) {
-          onProgress(part.number, totalParts);
-        }
-      }
-
-      // 4. Complete
-      await this.request("POST", `/v2/uploads/${uploadId}/complete`, {
-        body: JSON.stringify({ parts: completedParts }),
-        headers: { "Content-Type": "application/json" },
-      });
-
-      // 5. Stat to get revision
-      try {
-        const st = await this.stat(path);
-        return { revision: st.revision, writeSucceeded: true };
-      } catch {
-        return { revision: null, writeSucceeded: true };
-      }
-    } catch (e) {
-      // Best-effort abort on failure
-      try {
-        await this.request("POST", `/v2/uploads/${uploadId}/abort`, {
-          headers: { "Content-Type": "application/json" },
-        });
-      } catch {
-        // Abort is best-effort.
-      }
-      throw e;
-    }
-  }
-
-  /**
-   * PUT a single part to its presigned S3 URL.
-   * Returns the ETag from the response header.
-   */
-  private async uploadOnePart(
-    uploadId: string,
-    part: PresignedPart,
-    data: ArrayBuffer,
-    isRetry = false,
-  ): Promise<string> {
-    const headers: Record<string, string> = {};
-    if (part.headers) {
-      for (const [k, v] of Object.entries(part.headers)) {
-        if (k.toLowerCase() !== "host") {
-          headers[k] = v;
-        }
-      }
-    }
-
-    const resp = await requestUrl({
-      url: part.url,
-      method: "PUT",
-      body: data,
-      headers,
-      throw: false,
-    });
-
-    if (resp.status === 403 && !isRetry) {
-      // Presigned URL expired — re-presign and retry once
-      const fresh = await this.presignOnePart(uploadId, part.number);
-      return this.uploadOnePart(uploadId, fresh, data, true);
-    }
-
-    if (resp.status >= 300) {
-      throw new Drive9Error(`part upload failed: HTTP ${resp.status}`, resp.status);
-    }
-
-    return resp.headers["etag"] ?? resp.headers["ETag"] ?? "";
-  }
-
-  /** Fetch a fresh presigned URL for a single part (retry path). */
-  private async presignOnePart(
-    uploadId: string,
-    partNumber: number,
-  ): Promise<PresignedPart> {
-    const resp = await this.request(
-      "POST",
-      `/v2/uploads/${uploadId}/presign`,
-      {
-        body: JSON.stringify({ part_number: partNumber }),
-        headers: { "Content-Type": "application/json" },
-      },
-    );
-    return resp.json as PresignedPart;
-  }
-
   /** DELETE — remove a file. */
   async delete(path: string): Promise<void> {
-    await this.request("DELETE", `/v1/fs/${encodePath(path)}`, {
-      headers: this.mutationHeaders(),
-    });
+    await this.wrap(() => this.sdk.delete(path));
   }
 
   /** POST ?rename — rename/move a file. */
   async rename(oldPath: string, newPath: string): Promise<void> {
-    await this.request("POST", `/v1/fs/${encodePath(newPath)}?rename`, {
-      headers: {
-        ...this.mutationHeaders(),
-        "X-Dat9-Rename-Source": oldPath,
-      },
-    });
+    await this.wrap(() => this.sdk.rename(oldPath, newPath));
   }
 
   /** POST ?mkdir — create a directory. */
   async mkdir(path: string): Promise<void> {
-    await this.request("POST", `/v1/fs/${encodePath(path)}?mkdir`, {
-      headers: this.mutationHeaders(),
-    });
+    await this.wrap(() => this.sdk.mkdir(path));
   }
 
   /** GET ?list=1 — list directory contents. */
   async list(path: string): Promise<FileInfo[]> {
-    const resp = await this.request("GET", `/v1/fs/${encodePath(path)}?list=1`);
-    const data = resp.json;
-    if (Array.isArray(data)) return data as FileInfo[];
-    if (data && Array.isArray((data as Record<string, unknown>).entries)) {
-      return (data as Record<string, unknown>).entries as FileInfo[];
-    }
-    return [];
+    const entries = await this.wrap(() => this.sdk.list(path));
+    return entries.map((entry) => ({
+      name: entry.name,
+      size: entry.size,
+      isDir: entry.isDir,
+      mtime: entry.mtime?.getTime() ?? 0,
+    }));
   }
 
   /** GET ?grep= — hybrid search (FTS + vector + keyword fallback). */
   async grep(query: string, limit = 20): Promise<SearchResult[]> {
-    const q = encodeURIComponent(query);
-    const resp = await this.request(
-      "GET",
-      `/v1/fs/?grep=${q}&limit=${limit}`,
-    );
-    const data = resp.json;
-    if (Array.isArray(data)) return data as SearchResult[];
-    return [];
+    return this.wrap(() => this.sdk.grep(query, "/", limit));
   }
 
   /**
@@ -371,44 +192,12 @@ export class Drive9Client {
     return { entries: all, complete };
   }
 
-  private async request(
-    method: string,
-    urlPath: string,
-    opts?: { body?: string | ArrayBuffer; headers?: Record<string, string> },
-  ) {
-    const url = `${this.serverUrl}${urlPath}`;
-    const params: RequestUrlParam = {
-      url,
-      method,
-      headers: {
-        ...(this.apiKey ? { Authorization: `Bearer ${this.apiKey}` } : {}),
-        ...(opts?.headers ?? {}),
-      },
-      throw: false,
-    };
-    if (opts?.body !== undefined) {
-      params.body = opts.body;
+  private async wrap<T>(fn: () => Promise<T>): Promise<T> {
+    try {
+      return await fn();
+    } catch (error) {
+      throw normalizeDrive9Error(error);
     }
-
-    const resp = await requestUrl(params);
-
-    if (resp.status >= 400) {
-      let msg = `HTTP ${resp.status}`;
-      try {
-        if (typeof resp.json?.error === "string") {
-          msg = resp.json.error;
-        }
-      } catch {
-        // HEAD responses have no body — json access may throw.
-      }
-      throw new Drive9Error(msg, resp.status);
-    }
-
-    return resp;
-  }
-
-  private mutationHeaders(): Record<string, string> {
-    return this.actorId ? { "X-Dat9-Actor": this.actorId } : {};
   }
 }
 
@@ -429,18 +218,22 @@ export function sanitizeError(msg: string): string {
     .replace(/Authorization:\s*\S+/gi, "Authorization: ***");
 }
 
-/** Presigned part URL from the v2 presign-batch endpoint. */
-interface PresignedPart {
-  number: number;
-  url: string;
-  size: number;
-  headers?: Record<string, string>;
+function normalizeDrive9Error(error: unknown): Drive9Error {
+  if (error instanceof Drive9Error) return error;
+  if (error instanceof StatusError) {
+    return new Drive9Error(error.message, error.statusCode);
+  }
+  if (error instanceof Drive9SDKError) {
+    return new Drive9Error(error.message, 0);
+  }
+  if (error instanceof Error) {
+    return new Drive9Error(error.message, 0);
+  }
+  return new Drive9Error(String(error), 0);
 }
 
-/** Encode path segments for URL (don't encode slashes). */
-function encodePath(path: string): string {
-  return path
-    .split("/")
-    .map((seg) => encodeURIComponent(seg))
-    .join("/");
+function toArrayBuffer(data: Uint8Array): ArrayBuffer {
+  const copy = new Uint8Array(data.byteLength);
+  copy.set(data);
+  return copy.buffer;
 }
